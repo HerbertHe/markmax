@@ -1,10 +1,21 @@
 import MarkdownIt from "markdown-it"
+import { escapeHtml, unescapeAll } from "markdown-it/lib/common/utils"
 import Token from "markdown-it/lib/token"
-import { Flags, VElement, VNode } from "million"
-import { escapeHTML } from "../utils"
+import type { VElement, VNode } from "million"
 
-// TODO 类型兼容处理
-type RuleCallback = (tokens: Token[], idx: number, slf: Transformer) => VNode[] | VNode
+enum Flags {
+    ENTITY = 0,
+    ELEMENT = 1,
+    ELEMENT_IGNORE = 2,
+    ELEMENT_SKIP_DIFF = 3,
+    ELEMENT_NO_CHILDREN = 4,
+    ELEMENT_TEXT_CHILDREN = 5,
+    ELEMENT_KEYED_CHILDREN = 6
+}
+
+type RuleCallback = (tokens: Token[], idx: number, slf: Transformer) => ResultNode
+
+type ResultNode = VNode | VNode[] | string
 
 const Rules: Record<string, RuleCallback> = {
     code_inline: (tokens: Token[], idx: number, slf: Transformer) => {
@@ -12,7 +23,7 @@ const Rules: Record<string, RuleCallback> = {
         return {
             tag: "code",
             props: slf.renderAttrs(token),
-            children: [escapeHTML(token.content)],
+            children: [escapeHtml(token.content)],
             flag: Flags.ELEMENT_TEXT_CHILDREN
         }
     },
@@ -24,16 +35,52 @@ const Rules: Record<string, RuleCallback> = {
             props: slf.renderAttrs(token),
             children: [{
                 tag: "code",
-                children: [escapeHTML(token.content)],
+                children: [escapeHtml(token.content)],
                 flag: Flags.ELEMENT_TEXT_CHILDREN
             }],
             flag: Flags.ELEMENT
         }
     },
 
-    // fence: (tokens: Token[], idx: number, slf: Transformer) => {
-    //     // TODO 围栏处理
-    // },
+    fence: (tokens: Token[], idx: number, slf: Transformer) => {
+        // TODO 围栏处理
+        const token = tokens[idx]
+        const info = token.info ? unescapeAll(token.info) : ""
+        let langName = ""
+        let langAttrs = ""
+        let arr
+
+        if (info) {
+            arr = info.split(/\s+/)
+            langName = arr[0]
+            langAttrs = arr.slice(2).join("")
+        }
+
+        // TODO 处理 highlight, 添加 options 的支持
+        // 不管什么语言生成节点就好
+        // 配置项存在则交给高亮函数处理
+
+        // 不存在则返回原样
+        // TODO 使用 highlight.js 来处理
+        let highlighted = escapeHtml(token.content)
+
+        // 处理高亮之后的代码是否以 pre 开头, 否则添加 \n, 加空行
+
+        // TODO 注入 class
+
+        // 保守输出
+        return {
+            tag: "pre",
+            props: slf.renderAttrs(token),
+            children: [{
+                tag: "code",
+                // TODO 高亮之后的代码内容
+                children: [highlighted],
+                flag: Flags.ELEMENT
+            }],
+            flag: Flags.ELEMENT
+        }
+    },
 
     image: (tokens: Token[], idx: number, slf: Transformer) => {
         const token = tokens[idx]
@@ -41,8 +88,21 @@ const Rules: Record<string, RuleCallback> = {
         return slf.renderToken(tokens, idx)
     },
 
-    // TODO hardbreak
+    // TODO 可能的 options
+    hardbreak: (tokens: Token[], idx: number, slf: Transformer) => {
+        return {
+            tag: "br",
+            flag: Flags.ELEMENT_NO_CHILDREN
+        }
+    },
     // TODO softbreak
+    softbreak: (tokens: Token[], idx: number, slf: Transformer) => {
+        return {
+            tag: "br",
+            flag: Flags.ELEMENT_NO_CHILDREN
+        }
+    },
+
     text: (tokens: Token[], idx: number, slf: Transformer) => {
         return tokens[idx].content
     },
@@ -73,7 +133,7 @@ class Transformer {
 
         for (let i = 0; i < attrs.length; i++) {
             const [key, value] = attrs[i]
-            result[escapeHTML(key)] = escapeHTML(value)
+            result[escapeHtml(key)] = escapeHtml(value)
         }
 
         return result
@@ -98,7 +158,6 @@ class Transformer {
 
     renderToken(tokens: Token[], idx: number): VNode[] {
         // TODO
-        let nextToken
         let result: VNode[] = []
         let needLf = false
         let { tag, block, nesting, hidden } = tokens[idx]
@@ -119,8 +178,10 @@ class Transformer {
             result.push(LFel)
         }
 
-        let el: VElement
-        el.tag = tag
+        let el: VElement = {
+            tag: tag,
+            flag: Flags.ELEMENT
+        }
 
         const attrs = this.renderAttrs(tokens[idx])
         if (attrs) {
@@ -134,7 +195,7 @@ class Transformer {
             if (nesting === 1) {
                 if (idx + 1 < tokens.length) {
                     // 获取下一个 token
-                    nextToken = tokens[idx + 1]
+                    let nextToken = tokens[idx + 1]
 
                     if (nextToken.type === "inline" || nextToken.hidden) {
                         needLf = false
@@ -155,38 +216,67 @@ class Transformer {
         return result
     }
 
-    private _renderInline(tokens: Token[]): VNode {
+    private _renderInline(tokens: Token[]): ResultNode {
         let result: VNode[] = []
         for (let i = 0; i < tokens.length; i++) {
-            // 暂时不考虑兼容 rules
-            // TODO 渲染 token
+            const { type } = tokens[i]
+            if (Rules.hasOwnProperty(type)) {
+                const tmp = Rules[type](tokens, i, this)
+                if (Array.isArray(tmp)) {
+                    result = result.concat(tmp)
+                } else {
+                    result.push(tmp)
+                }
+            } else {
+                const tmp = this.renderToken(tokens, i)
+                if (Array.isArray(tmp)) {
+                    result = result.concat(tmp)
+                } else {
+                    result.push(tmp)
+                }
+            }
         }
+
+        return result
     }
 
     // TODO 设计 rules 进行兼容
-    /**
-     * 入口方法
-     * 1. 仅关注于 tokens
-     */
     render() {
-        // BUG 下面的类型定义可能存在错误
         let result: VNode[] = []
         for (let i = 0; i < this._tokens.length; i++) {
             const { type, children } = this._tokens[i]
             if (type === "inline") {
-                // 渲染 inline 的子项
-                result.push(this._renderInline(children))
+                const tmp = this._renderInline(children)
+                if (Array.isArray(tmp)) {
+                    result = result.concat(tmp)
+                } else {
+                    result.push(tmp)
+                }
+            } else if (Rules.hasOwnProperty(type)) {
+                const tmp = Rules[type](this._tokens, i, this)
+                if (Array.isArray(tmp)) {
+                    result = result.concat(tmp)
+                } else {
+                    result.push(tmp)
+                }
             } else {
-                // 渲染 Token
+                const tmp = this.renderToken(this._tokens, i)
+                if (Array.isArray(tmp)) {
+                    result = result.concat(tmp)
+                } else {
+                    result.push(tmp)
+                }
             }
         }
+        return result
     }
 }
 
 // 转化 Markdown-it 的树为 VNode
 export const transformMarkdownToVNode = (markdown: string) => {
     const parser = new MarkdownIt().parse(markdown, {})
-    const vnode = transformer(parser)
+    const vnode = new Transformer(parser).render()
+    console.log(vnode)
     return vnode
 }
 
