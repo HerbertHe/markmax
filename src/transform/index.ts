@@ -3,6 +3,8 @@ import { escapeHtml, unescapeAll } from "markdown-it/lib/common/utils"
 import Token from "markdown-it/lib/token"
 import type { VElement, VNode } from "million"
 
+// TODO 考虑直接移除 br, 此模式下完全不需要手动换行
+
 enum Flags {
     ENTITY = 0,
     ELEMENT = 1,
@@ -17,12 +19,75 @@ type RuleCallback = (tokens: Token[], idx: number, slf: Transformer) => ResultNo
 
 type ResultNode = VNode | VNode[] | string
 
+class Washer {
+    private _vnode: VNode[] = []
+    private _elStack: VNode[] = []
+    private _res: VNode[] = []
+    private _idx = 0
+    constructor(vnode: VNode[]) {
+        this._vnode = vnode
+    }
+
+    private _worker(node: VNode) {
+        if (typeof node === "string") {
+            const children = (<VElement>this._elStack[this._elStack.length - 1]).children
+            if (!!children) {
+                (<VElement>this._elStack[this._elStack.length - 1]).children.push(node)
+            } else {
+                (<VElement>this._elStack[this._elStack.length - 1]).children = [node]
+            }
+            return
+        }
+
+        // TODO 过滤不必要的 nesting 节点
+        if (node.props?.nesting === 1) {
+            this._elStack.push(node)
+            return
+        }
+
+        if (node.props?.nesting === -1) {
+            const curr = this._elStack.pop()
+            const preNode = this._elStack[this._elStack.length - 1]
+            if (!!preNode) {
+                const children = (<VElement>preNode).children
+                if (!!children) {
+                    (<VElement>preNode).children.push(curr)
+                } else {
+                    (<VElement>preNode).children = [curr]
+                }
+            } else {
+                this._res.push(curr)
+            }
+            return
+        }
+    }
+
+
+    wash = () => {
+        // TODO 寻找最近的同名子节点的然后转化为子节点？或者直接在遍历 token 的时候处理就好了
+        if (this._vnode.length === 0) {
+            return []
+        }
+
+        while (this._idx < this._vnode.length) {
+            const node = this._vnode[this._idx]
+            this._worker(node)
+            this._idx++
+        }
+
+        return this._res
+    }
+}
+
 const Rules: Record<string, RuleCallback> = {
     code_inline: (tokens: Token[], idx: number, slf: Transformer) => {
         const token = tokens[idx]
         return {
             tag: "code",
-            props: slf.renderAttrs(token),
+            props: {
+                ...slf.renderAttrs(token),
+                nesting: token.nesting
+            },
             children: [escapeHtml(token.content)],
             flag: Flags.ELEMENT_TEXT_CHILDREN
         }
@@ -32,9 +97,15 @@ const Rules: Record<string, RuleCallback> = {
         const token = tokens[idx]
         return {
             tag: "pre",
-            props: slf.renderAttrs(token),
+            props: {
+                ...slf.renderAttrs(token),
+                nesting: token.nesting
+            },
             children: [{
                 tag: "code",
+                props: {
+                    nesting: token.nesting
+                },
                 children: [escapeHtml(token.content)],
                 flag: Flags.ELEMENT_TEXT_CHILDREN
             }],
@@ -71,9 +142,15 @@ const Rules: Record<string, RuleCallback> = {
         // 保守输出
         return {
             tag: "pre",
-            props: slf.renderAttrs(token),
+            props: {
+                ...slf.renderAttrs(token),
+                nesting: token.nesting
+            },
             children: [{
                 tag: "code",
+                props: {
+                    nesting: token.nesting,
+                },
                 // TODO 高亮之后的代码内容
                 children: [highlighted],
                 flag: Flags.ELEMENT
@@ -88,6 +165,7 @@ const Rules: Record<string, RuleCallback> = {
         return slf.renderToken(tokens, idx)
     },
 
+    // TODO 考虑移除换行节点
     // TODO 可能的 options
     hardbreak: (tokens: Token[], idx: number, slf: Transformer) => {
         return {
@@ -157,7 +235,6 @@ class Transformer {
     }
 
     renderToken(tokens: Token[], idx: number): VNode[] {
-        // TODO
         let result: VNode[] = []
         let needLf = false
         let { tag, block, nesting, hidden } = tokens[idx]
@@ -180,12 +257,15 @@ class Transformer {
 
         let el: VElement = {
             tag: tag,
-            flag: Flags.ELEMENT
+            flag: Flags.ELEMENT,
+            props: {
+                nesting: nesting
+            }
         }
 
         const attrs = this.renderAttrs(tokens[idx])
         if (attrs) {
-            el.props = attrs
+            el.props = { ...el.props, ...attrs }
         }
 
         if (block) {
@@ -242,6 +322,7 @@ class Transformer {
 
     // TODO 设计 rules 进行兼容
     render() {
+        // TODO 序列需要变为嵌套
         let result: VNode[] = []
         for (let i = 0; i < this._tokens.length; i++) {
             const { type, children } = this._tokens[i]
@@ -268,7 +349,8 @@ class Transformer {
                 }
             }
         }
-        return result
+
+        return new Washer(result).wash()
     }
 }
 
@@ -276,13 +358,5 @@ class Transformer {
 export const transformMarkdownToVNode = (markdown: string) => {
     const parser = new MarkdownIt().parse(markdown, {})
     const vnode = new Transformer(parser).render()
-    console.log(vnode)
     return vnode
 }
-
-/**
- * Markdown it renderer 源码映射
- * 1. 判断类型是否是 inline
- * 2. 判断 rules 里面是否有自定义规则
- * 3. 处理普通 token 的情况
- */
