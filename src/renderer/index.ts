@@ -1,7 +1,9 @@
 import { checkVditorPluginCompatible, checkVditorPluginIdentifier, loadVditorPlugins, loadVditorPluginsStyle, version as VPVersion } from "vditor-plugin"
 import type { IVditorPlugin, VditorPluginFeaturesType, VditorPluginRenderersType, VditorPluginStylesType, VditorPluginsType } from "vditor-plugin/dist/types"
 import { version } from "../../package.json"
-import { render } from "million"
+import { render, VNode } from "million"
+
+import { transformMarkdownToVNode } from "../transform/index"
 
 interface IRendererOptions {
     plugins?: VditorPluginsType
@@ -27,12 +29,14 @@ export class Renderer {
     private _setup = () => {
         console.log(`Vditor Plugin Version: ${VPVersion}`)
 
-        const [unusablePlugins, usablePlugins] = this._filterPlugins(this._plugins)
-        if (unusablePlugins.length > 0) {
-            console.error(unusablePlugins.map(([, , msg]) => msg).join("\n"))
-        }
+        if (!!this._plugins) {
+            const [unusablePlugins, usablePlugins] = this._filterPlugins(this._plugins)
+            if (unusablePlugins.length > 0) {
+                console.error(unusablePlugins.map(([, , msg]) => msg).join("\n"))
+            }
 
-        this._registerPlugins(usablePlugins)
+            this._registerPlugins(usablePlugins)
+        }
     }
 
     // filter plugins
@@ -97,10 +101,15 @@ export class Renderer {
             throw new Error("Element Not Found!")
         }
         // TODO 考虑先加载样式表
-        this._loadStyles()
+        // this._loadStyles()
+        const vnode: VNode = {
+            tag: "div",
+            flag: 1,
+            children: transformMarkdownToVNode(content),
+        }
 
         // TODO 使用 million 渲染DOM
-        // render(el, )
+        render(el, vnode)
     }
 
     /**

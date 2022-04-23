@@ -1,2 +1,4 @@
 node_modules
 __test__/tmp
+dist
+demo/assets
