@@ -6,6 +6,7 @@ import { render, VNode } from "million"
 import { transformMarkdownToVNode } from "../transform/index"
 
 interface IRendererOptions {
+    theme?: string
     plugins?: VditorPluginsType
 }
 
@@ -20,13 +21,17 @@ export class Renderer {
 
     readonly version = version
 
-    constructor({ plugins }: IRendererOptions) {
+    constructor({ theme, plugins }: IRendererOptions) {
         this._plugins = plugins
         this._setup()
+        if (!!theme) {
+            loadVditorPluginsStyle(new Map([["theme", "./assets/markmax.css"]]))
+        }
     }
 
     // setup
     private _setup = () => {
+        console.log(`Markmax Version: ${version}`)
         console.log(`Vditor Plugin Version: ${VPVersion}`)
 
         if (!!this._plugins) {
@@ -36,6 +41,7 @@ export class Renderer {
             }
 
             this._registerPlugins(usablePlugins)
+            this._loadStyles()
         }
     }
 
@@ -101,10 +107,12 @@ export class Renderer {
             throw new Error("Element Not Found!")
         }
         // TODO 考虑先加载样式表
-        // this._loadStyles()
         const vnode: VNode = {
             tag: "div",
             flag: 1,
+            props: {
+                class: "markmax",
+            },
             children: transformMarkdownToVNode(content),
         }
 

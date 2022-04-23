@@ -12,7 +12,7 @@
             import { Renderer } from "./assets/index.mjs"
             fetch("https://cdn.jsdelivr.net/gh/Vanessa219/vditor@master/README.md").then(async res => {
                 const text = await res.text()
-                const renderer = new Renderer({ plugins: undefined })
+                const renderer = new Renderer({ theme: "markmax", plugins: undefined })
                 renderer.render(text, "app")
             })
         </script>

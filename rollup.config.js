@@ -6,6 +6,8 @@ import json from "@rollup/plugin-json"
 import resolve from "@rollup/plugin-node-resolve"
 import cjs from "@rollup/plugin-commonjs"
 
+// TODO 打包 less
+
 const devPlugins =
     process.env.NODE_ENV === "development"
         ? [
@@ -43,6 +45,7 @@ export default defineConfig({
             loaders: {
                 ".json": "json",
             },
+            treeShaking: true,
         }),
 
         ...devPlugins,
