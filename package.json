@@ -4,7 +4,7 @@
   "description": "新的markdown解决方案",
   "main": "index.js",
   "scripts": {
-    "dev": "concurrently \"node scripts/sync.mjs\" \"cross-env NODE_ENV=\"development\" rollup -cw\"",
+    "dev": "concurrently \"cross-env NODE_ENV=development rollup -cw\" \"node scripts/sync.mjs\"",
     "build": "rollup -c",
     "test": "jest"
   },
@@ -12,8 +12,8 @@
     "type": "git",
     "url": "git+https://github.com/HerbertHe/markmax.git"
   },
-  "author": "",
-  "license": "ISC",
+  "author": "Herbert He<Herbert.He0229@gmail.com>",
+  "license": "MIT",
   "bugs": {
     "url": "https://github.com/HerbertHe/markmax/issues"
   },
@@ -40,10 +40,12 @@
     "esbuild": "^0.14.38",
     "jest": "^27.5.1",
     "less": "^4.1.2",
+    "postcss": "^8.4.12",
     "prettier": "^2.6.2",
     "rollup": "^2.70.2",
     "rollup-plugin-esbuild": "^4.9.1",
     "rollup-plugin-livereload": "^2.0.5",
+    "rollup-plugin-postcss": "^4.0.2",
     "rollup-plugin-serve": "^1.1.0",
     "typescript": "^4.6.3"
   }

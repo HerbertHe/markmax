@@ -39,8 +39,8 @@ class Washer {
             return
         }
 
-        // TODO 过滤不必要的 nesting 节点
         if (node.props?.nesting === 1) {
+            delete node.props.nesting;
             this._elStack.push(node)
             return
         }
@@ -60,11 +60,17 @@ class Washer {
             }
             return
         }
+
+        // 处理 nesting = 0 的节点
+        if (node.props?.nesting === 0) {
+            delete node.props.nesting
+            this._res.push(node)
+            return
+        }
     }
 
 
     wash = () => {
-        // TODO 寻找最近的同名子节点的然后转化为子节点？或者直接在遍历 token 的时候处理就好了
         if (this._vnode.length === 0) {
             return []
         }

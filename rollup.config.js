@@ -5,7 +5,7 @@ import livereload from "rollup-plugin-livereload"
 import json from "@rollup/plugin-json"
 import resolve from "@rollup/plugin-node-resolve"
 import cjs from "@rollup/plugin-commonjs"
-
+import postcss from "rollup-plugin-postcss"
 // TODO 打包 less
 
 const devPlugins =
@@ -32,6 +32,10 @@ export default defineConfig({
         },
     ],
     plugins: [
+        postcss({
+            extract: "markmax.css",
+            extensions: [".less"],
+        }),
         json(),
         cjs({
             include: ["node_modules/**"],
