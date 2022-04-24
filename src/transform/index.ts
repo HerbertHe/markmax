@@ -2,8 +2,11 @@ import MarkdownIt from "markdown-it"
 import { escapeHtml, unescapeAll } from "markdown-it/lib/common/utils"
 import Token from "markdown-it/lib/token"
 import type { VElement, VNode } from "million"
+import { HighlightPlugin } from "../plugins/highlight"
+import { fromStringToVNode } from "../utils/fromStringToVNode"
 
 // TODO 考虑直接移除 br, 此模式下完全不需要手动换行
+// BUG html 会被当做字符串处理
 
 enum Flags {
     ENTITY = 0,
@@ -61,10 +64,21 @@ class Washer {
             return
         }
 
-        // 处理 nesting = 0 的节点
+        // BUG 处理 nesting = 0 的节点, 错误的节点排列顺序需要修改，错误的树
         if (node.props?.nesting === 0) {
             delete node.props.nesting
-            this._res.push(node)
+            // 向父节点添加子项
+            const preNode = this._elStack[this._elStack.length - 1]
+            if (!!preNode) {
+                const children = (<VElement>preNode).children
+                if (!!children) {
+                    (<VElement>preNode).children.push(node)
+                } else {
+                    (<VElement>preNode).children = [node]
+                }
+            } else {
+                this._res.push(node)
+            }
             return
         }
     }
@@ -94,7 +108,7 @@ const Rules: Record<string, RuleCallback> = {
                 ...slf.renderAttrs(token),
                 nesting: token.nesting
             },
-            children: [escapeHtml(token.content)],
+            children: fromStringToVNode(escapeHtml(token.content)),
             flag: Flags.ELEMENT_TEXT_CHILDREN
         }
     },
@@ -112,7 +126,7 @@ const Rules: Record<string, RuleCallback> = {
                 props: {
                     nesting: token.nesting
                 },
-                children: [escapeHtml(token.content)],
+                children: fromStringToVNode(escapeHtml(token.content)),
                 flag: Flags.ELEMENT_TEXT_CHILDREN
             }],
             flag: Flags.ELEMENT
@@ -121,11 +135,12 @@ const Rules: Record<string, RuleCallback> = {
 
     fence: (tokens: Token[], idx: number, slf: Transformer) => {
         // TODO 围栏处理
+        // TODO highlight 可以插件化
         const token = tokens[idx]
-        const info = token.info ? unescapeAll(token.info) : ""
+        const info = token.info ? unescapeAll(token.info).trim() : ""
         let langName = ""
         let langAttrs = ""
-        let arr
+        let arr = []
 
         if (info) {
             arr = info.split(/\s+/)
@@ -133,17 +148,46 @@ const Rules: Record<string, RuleCallback> = {
             langAttrs = arr.slice(2).join("")
         }
 
-        // TODO 处理 highlight, 添加 options 的支持
-        // 不管什么语言生成节点就好
-        // 配置项存在则交给高亮函数处理
+        // TODO 改成插件化，暂时使用 highlight.js 来进行直接处理
+        /**
+         * @link https://github.com/markdown-it/markdown-it/blob/master/lib/renderer.js#L52
+         */
+        let highlighted = fromStringToVNode(HighlightPlugin(token.content))
 
-        // 不存在则返回原样
-        // TODO 使用 highlight.js 来处理
-        let highlighted = escapeHtml(token.content)
+        // TODO 处理高亮之后的代码是否以 pre 开头, 否则添加 \n, 加空行
 
-        // 处理高亮之后的代码是否以 pre 开头, 否则添加 \n, 加空行
+        if (info) {
+            let i = token.attrIndex("class")
+            let tmpAttrs = token.attrs ? token.attrs.slice() : []
 
-        // TODO 注入 class
+            if (i < 0) {
+                tmpAttrs.push(["class", "language-" + langName])
+            } else {
+                tmpAttrs[i] = tmpAttrs[i].slice() as [string, string]
+                tmpAttrs[i][1] += " language-" + langName
+            }
+
+            let tmpToken = {
+                attrs: tmpAttrs,
+            }
+
+            return {
+                tag: "pre",
+                props: {
+                    nesting: token.nesting
+                },
+                children: [{
+                    tag: "code",
+                    props: {
+                        ...slf.renderAttrs(tmpToken),
+                        nesting: token.nesting
+                    },
+                    children: highlighted,
+                    flag: Flags.ELEMENT
+                }],
+                flag: Flags.ELEMENT
+            }
+        }
 
         // 保守输出
         return {
@@ -157,8 +201,7 @@ const Rules: Record<string, RuleCallback> = {
                 props: {
                     nesting: token.nesting,
                 },
-                // TODO 高亮之后的代码内容
-                children: [highlighted],
+                children: highlighted,
                 flag: Flags.ELEMENT
             }],
             flag: Flags.ELEMENT
@@ -188,15 +231,15 @@ const Rules: Record<string, RuleCallback> = {
     },
 
     text: (tokens: Token[], idx: number, slf: Transformer) => {
-        return tokens[idx].content
+        return fromStringToVNode(tokens[idx].content)
     },
 
     html_block: (tokens: Token[], idx: number, slf: Transformer) => {
-        return tokens[idx].content
+        return fromStringToVNode(tokens[idx].content)
     },
 
     html_inline: (tokens: Token[], idx: number, slf: Transformer) => {
-        return tokens[idx].content
+        return fromStringToVNode(tokens[idx].content)
     }
 }
 
@@ -207,7 +250,7 @@ class Transformer {
         this._tokens = tokens
     }
 
-    renderAttrs(token: Token) {
+    renderAttrs(token: Token | Record<string, any>) {
         let result: Record<string, string> = {}
 
         const { attrs } = token
@@ -275,12 +318,10 @@ class Transformer {
         }
 
         if (block) {
-            // needLf, 插入换行符号
             needLf = true
 
             if (nesting === 1) {
                 if (idx + 1 < tokens.length) {
-                    // 获取下一个 token
                     let nextToken = tokens[idx + 1]
 
                     if (nextToken.type === "inline" || nextToken.hidden) {
@@ -292,7 +333,6 @@ class Transformer {
             }
         }
 
-        // result 闭合标签
         result.push(el)
 
         if (needLf) {
@@ -328,7 +368,6 @@ class Transformer {
 
     // TODO 设计 rules 进行兼容
     render() {
-        // TODO 序列需要变为嵌套
         let result: VNode[] = []
         for (let i = 0; i < this._tokens.length; i++) {
             const { type, children } = this._tokens[i]

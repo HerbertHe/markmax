@@ -34,7 +34,7 @@ export default defineConfig({
     plugins: [
         postcss({
             extract: "markmax.css",
-            extensions: [".less"],
+            extensions: [".less", ".css"],
         }),
         json(),
         cjs({
