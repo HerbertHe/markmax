@@ -109,7 +109,7 @@ const Rules: Record<string, RuleCallback> = {
                 nesting: token.nesting
             },
             children: fromStringToVNode(escapeHtml(token.content)),
-            flag: Flags.ELEMENT_TEXT_CHILDREN
+            flag: Flags.ELEMENT
         }
     },
 
@@ -127,7 +127,7 @@ const Rules: Record<string, RuleCallback> = {
                     nesting: token.nesting
                 },
                 children: fromStringToVNode(escapeHtml(token.content)),
-                flag: Flags.ELEMENT_TEXT_CHILDREN
+                flag: Flags.ELEMENT
             }],
             flag: Flags.ELEMENT
         }
@@ -231,7 +231,7 @@ const Rules: Record<string, RuleCallback> = {
     },
 
     text: (tokens: Token[], idx: number, slf: Transformer) => {
-        return fromStringToVNode(tokens[idx].content)
+        return escapeHtml(tokens[idx].content)
     },
 
     html_block: (tokens: Token[], idx: number, slf: Transformer) => {
@@ -401,6 +401,7 @@ class Transformer {
 
 // 转化 Markdown-it 的树为 VNode
 export const transformMarkdownToVNode = (markdown: string) => {
+    // BUG 修复不渲染 HTML 的问题
     const parser = new MarkdownIt().parse(markdown, {})
     const vnode = new Transformer(parser).render()
     return vnode

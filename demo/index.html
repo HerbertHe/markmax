@@ -10,7 +10,7 @@
         <div id="app"></div>
         <script type="module">
             import { Renderer } from "./assets/index.mjs"
-            fetch("https://cdn.jsdelivr.net/gh/Vanessa219/vditor@master/README.md").then(async res => {
+            fetch("./assets/test.md").then(async res => {
                 const text = await res.text()
                 const renderer = new Renderer({ theme: "markmax", plugins: undefined })
                 renderer.render(text, "app")
