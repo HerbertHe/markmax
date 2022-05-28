@@ -116,6 +116,8 @@ export class Renderer {
             children: transformMarkdownToVNode(content),
         }
 
+        console.log(vnode)
+
         // TODO 使用 million 渲染DOM
         render(el, vnode)
     }

@@ -22,6 +22,7 @@
     "highlight.js": "^11.5.1",
     "markdown-it": "^12.3.2",
     "million": "^1.8.2",
+    "punycode": "^2.1.1",
     "vditor-plugin": "^0.4.1"
   },
   "devDependencies": {
@@ -31,15 +32,12 @@
     "@rollup/plugin-commonjs": "^21.1.0",
     "@rollup/plugin-json": "^4.1.0",
     "@rollup/plugin-node-resolve": "^13.2.1",
-    "@types/jest": "^27.4.1",
     "@types/markdown-it": "^12.2.3",
     "@types/node": "^17.0.25",
-    "babel-jest": "^27.5.1",
     "chokidar": "^3.5.3",
     "concurrently": "^7.1.0",
     "cross-env": "^7.0.3",
     "esbuild": "^0.14.38",
-    "jest": "^27.5.1",
     "less": "^4.1.2",
     "postcss": "^8.4.12",
     "prettier": "^2.6.2",

@@ -21,6 +21,7 @@ const devPlugins =
 
 export default defineConfig({
     input: "src/index.ts",
+    // external: ["punycode"],
     output: [
         {
             file: "dist/index.mjs",
