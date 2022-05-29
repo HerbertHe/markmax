@@ -20,15 +20,14 @@ const devPlugins =
         : []
 
 export default defineConfig({
-    input: "src/index.ts",
-    // external: ["punycode"],
+    input: { index: "src/index.ts", plugin: "src/plugins/index.ts" },
     output: [
         {
-            file: "dist/index.mjs",
+            dir: "dist",
             format: "esm",
         },
         {
-            file: "dist/index.js",
+            dir: "dist",
             format: "cjs",
         },
     ],

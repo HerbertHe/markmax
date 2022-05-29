@@ -1,0 +1,30 @@
+.markmax {
+    table {
+        // TODO 修改默认样式
+        border-collapse: collapse;
+        border-spacing: 0;
+        width: 100%;
+        margin-bottom: 1rem;
+        font-size: 1rem;
+        line-height: 1.5;
+        border-radius: var(--markmax-theme-rounded);
+        overflow: hidden;
+
+        thead {
+            background-color: var(--markmax-theme-color);
+            color: white;
+        }
+
+        tbody {
+            tr {
+                &:nth-child(even) {
+                    background-color: var(--markmax-theme-bgcolor);
+                }
+            }
+        }
+
+        th, td {
+            padding: 0.5rem;
+        }
+    }
+}

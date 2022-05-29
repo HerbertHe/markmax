@@ -1,12 +1,27 @@
-import { checkVditorPluginCompatible, checkVditorPluginIdentifier, loadVditorPlugins, loadVditorPluginsStyle, version as VPVersion } from "vditor-plugin"
+// TODO 移除 vditor-plugin 设计
+import {
+    checkVditorPluginCompatible,
+    checkVditorPluginIdentifier,
+    loadVditorPlugins,
+    loadVditorPluginsStyle,
+    version as VPVersion
+} from "vditor-plugin"
 import type { IVditorPlugin, VditorPluginFeaturesType, VditorPluginRenderersType, VditorPluginStylesType, VditorPluginsType } from "vditor-plugin/dist/types"
 import { version } from "../../package.json"
-import { render, VNode } from "million"
 
+import { m, render, VNode } from "million"
+import { Options } from "markdown-it"
 import { transformMarkdownToVNode } from "../transform/index"
 
+/**
+ * MarkMax Renderer Options
+ * @param theme - MarkMax Theme
+ * @param options Options for markdown-it
+ * @param plugins MarkMax Plugins
+ */
 interface IRendererOptions {
     theme?: string
+    markdownit?: Options
     plugins?: VditorPluginsType
 }
 
@@ -19,10 +34,13 @@ export class Renderer {
     private _renderers: VditorPluginRenderersType = new Map()
     private _styles: VditorPluginStylesType = new Map()
 
+    private _markdownItOptions: Options = null
+
     readonly version = version
 
-    constructor({ theme, plugins }: IRendererOptions) {
+    constructor({ theme, plugins, markdownit }: IRendererOptions) {
         this._plugins = plugins
+        this._markdownItOptions = markdownit
         this._setup()
         if (!!theme) {
             loadVditorPluginsStyle(new Map([["theme", "./assets/markmax.css"]]))
@@ -107,18 +125,17 @@ export class Renderer {
             throw new Error("Element Not Found!")
         }
         // TODO 考虑先加载样式表
-        const vnode: VNode = {
-            tag: "div",
-            flag: 1,
-            props: {
-                class: "markmax",
+        const vnode: VNode = m(
+            "div",
+            {
+                class: "markmax"
             },
-            children: transformMarkdownToVNode(content),
-        }
+            transformMarkdownToVNode(content, this._markdownItOptions),
+            1
+        )
 
         console.log(vnode)
 
-        // TODO 使用 million 渲染DOM
         render(el, vnode)
     }
 

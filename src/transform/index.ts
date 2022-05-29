@@ -5,10 +5,10 @@ import { Transformer } from "./tranformer"
 // BUG html 会被当做字符串处理
 
 // 转化 Markdown-it 的树为 VNode
-export const transformMarkdownToVNode = (markdown: string) => {
+export const transformMarkdownToVNode = (markdown: string, options: MarkdownIt.Options) => {
     // BUG 修复不渲染 HTML 的问题
-    const parser = new MarkdownIt().parse(markdown, {})
-    const vnode = new Transformer(parser).render()
+    const parser = new MarkdownIt(options).parse(markdown, {})
+    const vnode = new Transformer(parser, options).render()
     console.log(parser, vnode)
     return vnode
 }

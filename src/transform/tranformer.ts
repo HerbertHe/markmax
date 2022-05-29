@@ -1,3 +1,4 @@
+import { Options } from "markdown-it"
 import { escapeHtml } from "markdown-it/lib/common/utils"
 import Token from "markdown-it/lib/token"
 import { m, VElement, VNode } from "million"
@@ -8,7 +9,7 @@ import { Washer } from "./washer"
 export class Transformer {
     private _tokens: Token[] = []
 
-    constructor(tokens: Token[]) {
+    constructor(tokens: Token[], options: Options) {
         this._tokens = tokens
     }
 

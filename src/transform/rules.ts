@@ -1,5 +1,4 @@
 import { m } from "million"
-
 import Token from "markdown-it/lib/token"
 import { ResultNode, RuleCallbackType } from "../types/rules"
 import { escapeHtml, unescapeAll } from "markdown-it/lib/common/utils"
