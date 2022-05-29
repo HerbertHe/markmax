@@ -9,10 +9,13 @@
     <body>
         <div id="app"></div>
         <script type="module">
-            import { Renderer } from "./assets/index.mjs"
+            import { Renderer } from "./assets/index.js"
             fetch("./assets/test.md").then(async res => {
                 const text = await res.text()
-                const renderer = new Renderer({ theme: "markmax", plugins: undefined })
+                const renderer = new Renderer({ theme: "markmax", plugins: undefined, markdownit: {
+                    html: true,
+                    linkify: true,
+                } })
                 renderer.render(text, "app")
             })
         </script>

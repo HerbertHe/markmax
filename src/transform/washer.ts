@@ -27,7 +27,24 @@ export class Washer {
         }
 
         if (node.props?.nesting === -1) {
-            const curr = this._elStack.pop()
+            let curr = this._elStack.pop()
+            /**
+             * 合并文本节点
+             * TODO: 实验性代码，可能可以移除
+             */
+            if ((<VElement>node).tag === "p") {
+                let tmp = curr as VElement
+                if (!!tmp.children) {
+                    if (tmp.children.every(child => typeof child === "string")) {
+                        tmp.children = [tmp.children.join("")]
+                        console.log()
+                    } else {
+                        tmp.children = tmp.children.filter(item => !!item)
+                    }
+                    curr = tmp
+                }
+            }
+
             const preNode = this._elStack[this._elStack.length - 1]
             if (!!preNode) {
                 const children = (<VElement>preNode).children

@@ -2,7 +2,7 @@
   "name": "markmax",
   "version": "1.0.0",
   "description": "新的markdown解决方案",
-  "main": "index.js",
+  "main": "dist/index.js",
   "scripts": {
     "dev": "concurrently \"cross-env NODE_ENV=development rollup -cw\" \"node scripts/sync.mjs\"",
     "build": "rollup -c",

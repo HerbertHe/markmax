@@ -1,14 +1,25 @@
 import MarkdownIt from "markdown-it"
+import { IRendererOptions } from "../types/renderer"
 import { Transformer } from "./tranformer"
 
 // TODO 考虑直接移除 br, 此模式下完全不需要手动换行
-// BUG html 会被当做字符串处理
 
 // 转化 Markdown-it 的树为 VNode
-export const transformMarkdownToVNode = (markdown: string, options: MarkdownIt.Options) => {
-    // BUG 修复不渲染 HTML 的问题
-    const parser = new MarkdownIt(options).parse(markdown, {})
+export const transformMarkdownToVNode = (markdown: string, options: IRendererOptions["markdownit"]) => {
+    const md = new MarkdownIt(options)
+    const { plugins } = options
+    /**
+     * 支持 markdown-it 插件
+     */
+    if (!!plugins && plugins.length > 0) {
+        plugins.forEach(plugin => {
+            md.use(plugin)
+        })
+    }
+
+    const parser = md.parse(markdown, {})
+    console.log("options", JSON.stringify(options))
     const vnode = new Transformer(parser, options).render()
-    console.log(parser, vnode)
+    // console.log(parser, vnode)
     return vnode
 }

@@ -12,18 +12,7 @@ import { version } from "../../package.json"
 import { m, render, VNode } from "million"
 import { Options } from "markdown-it"
 import { transformMarkdownToVNode } from "../transform/index"
-
-/**
- * MarkMax Renderer Options
- * @param theme - MarkMax Theme
- * @param options Options for markdown-it
- * @param plugins MarkMax Plugins
- */
-interface IRendererOptions {
-    theme?: string
-    markdownit?: Options
-    plugins?: VditorPluginsType
-}
+import { IRendererOptions } from "../types/renderer"
 
 /**
  * 渲染器

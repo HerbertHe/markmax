@@ -1,7 +1,11 @@
-import { m } from "million"
+import { m, VElement } from "million"
 import Token from "markdown-it/lib/token"
+
 import { ResultNode, RuleCallbackType } from "../types/rules"
 import { escapeHtml, unescapeAll } from "markdown-it/lib/common/utils"
+import { IRendererOptions } from "../types/renderer"
+import { fromHTMLStringToVNode } from "../utils/fromHTMLStringToVNode"
+import { fromStringAttrsToObj } from "../utils/fromStringAttrsToObj"
 
 declare class Transformer {
     renderInlineAsText(children: Token[]): string
@@ -10,7 +14,7 @@ declare class Transformer {
 }
 
 export const Rules: Record<string, RuleCallbackType> = {
-    code_inline: (tokens: Token[], idx: number, slf: Transformer) => {
+    code_inline: (tokens: Token[], idx: number, options: IRendererOptions["markdownit"], slf: Transformer) => {
         const token = tokens[idx]
         return [m(
             "code",
@@ -22,7 +26,7 @@ export const Rules: Record<string, RuleCallbackType> = {
         )]
     },
 
-    code_block: (tokens: Token[], idx: number, slf: Transformer) => {
+    code_block: (tokens: Token[], idx: number, options: IRendererOptions["markdownit"], slf: Transformer) => {
         const token = tokens[idx]
         return [m(
             "pre",
@@ -36,7 +40,7 @@ export const Rules: Record<string, RuleCallbackType> = {
         )]
     },
 
-    fence: (tokens: Token[], idx: number, slf: Transformer) => {
+    fence: (tokens: Token[], idx: number, options: IRendererOptions["markdownit"], slf: Transformer) => {
         const token = tokens[idx]
         const info = token.info ? unescapeAll(token.info).trim() : ""
         let langName = ""
@@ -105,7 +109,7 @@ export const Rules: Record<string, RuleCallbackType> = {
         ]
     },
 
-    image: (tokens: Token[], idx: number, slf: Transformer) => {
+    image: (tokens: Token[], idx: number, options: IRendererOptions["markdownit"], slf: Transformer) => {
         const token = tokens[idx]
         token.attrs[token.attrIndex("alt")][1] = slf.renderInlineAsText(token.children)
         return slf.renderToken(tokens, idx)
@@ -113,23 +117,61 @@ export const Rules: Record<string, RuleCallbackType> = {
 
     // TODO 考虑移除换行节点
     // TODO 可能的 options
-    hardbreak: (tokens: Token[], idx: number, slf: Transformer) => {
+    hardbreak: (tokens: Token[], idx: number, options: IRendererOptions["markdownit"], slf: Transformer) => {
         return [m("br", {})]
     },
     // TODO softbreak
-    softbreak: (tokens: Token[], idx: number, slf: Transformer) => {
+    softbreak: (tokens: Token[], idx: number, options: IRendererOptions["markdownit"], slf: Transformer) => {
         return [m("br", {})]
     },
 
-    text: (tokens: Token[], idx: number, slf: Transformer) => {
-        return escapeHtml(tokens[idx].content)
+    text: (tokens: Token[], idx: number, options: IRendererOptions["markdownit"], slf: Transformer) => {
+        const { content } = tokens[idx]
+
+        return escapeHtml(content)
     },
 
-    html_block: (tokens: Token[], idx: number, slf: Transformer) => {
+    html_block: (tokens: Token[], idx: number, options: IRendererOptions["markdownit"], slf: Transformer) => {
+        const { html } = options
+        if (html) {
+            const node = fromHTMLStringToVNode(tokens[idx].content.replace(/\n/g, "")) as VElement
+            node.props = {
+                nesting: 0
+            }
+            return node
+        }
         return tokens[idx].content
     },
 
-    html_inline: (tokens: Token[], idx: number, slf: Transformer) => {
+    html_inline: (tokens: Token[], idx: number, options: IRendererOptions["markdownit"], slf: Transformer) => {
+        const { content } = tokens[idx]
+        const { html } = options
+        console.log(content)
+        // 原生HTML 标签支持
+        // TODO 修复原生属性问题
+        const HTMLTagOpenRegExp = /\<([a-z]+)\s*([^\<\>]+)?\>/
+        const HTMLTagCloseRegExp = /\<\/([a-z]+)\>/
+        if (html && HTMLTagOpenRegExp.test(content)) {
+            const [, tag, attrs] = content.match(HTMLTagOpenRegExp)
+            let obj = fromStringAttrsToObj(attrs)
+            return m(
+                tag,
+                {
+                    nesting: 1,
+                    ...obj
+                }
+            )
+        }
+
+        if (html && HTMLTagCloseRegExp.test(content)) {
+            const [, tag] = content.match(HTMLTagCloseRegExp)
+            return m(
+                tag,
+                {
+                    nesting: -1,
+                }
+            )
+        }
         return tokens[idx].content
     }
 }

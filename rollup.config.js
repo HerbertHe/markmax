@@ -26,10 +26,6 @@ export default defineConfig({
             dir: "dist",
             format: "esm",
         },
-        {
-            dir: "dist",
-            format: "cjs",
-        },
     ],
     plugins: [
         postcss({
@@ -46,6 +42,8 @@ export default defineConfig({
         esbuild({
             include: ["src/**/*.ts"],
             exclude: /node_modules/,
+            format: "esm",
+            minify: process.env.NODE_ENV !== "development",
             loaders: {
                 ".json": "json",
             },
