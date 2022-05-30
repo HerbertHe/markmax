@@ -146,9 +146,6 @@ export const Rules: Record<string, RuleCallbackType> = {
     html_inline: (tokens: Token[], idx: number, options: IRendererOptions["markdownit"], slf: Transformer) => {
         const { content } = tokens[idx]
         const { html } = options
-        console.log(content)
-        // 原生HTML 标签支持
-        // TODO 修复原生属性问题
         if (html && isHTMLOpen(content)) {
             return generateHTMLTagOpenVNode(content)
         }

@@ -2,17 +2,23 @@ import { escapeHtml } from "markdown-it/lib/common/utils"
 import Token from "markdown-it/lib/token"
 import { m, VElement, VNode } from "million"
 import { IRendererOptions } from "../types/renderer"
-import { ResultNode } from "../types/rules"
+import { ResultNode, RuleCallbackType } from "../types/rules"
 import { Rules } from "./rules"
 import { Washer } from "./washer"
 
 export class Transformer {
     private _tokens: Token[] = []
     private _options: IRendererOptions["markdownit"] = null
+    private _rules: Record<string, RuleCallbackType> = Rules
 
-    constructor(tokens: Token[], options: IRendererOptions["markdownit"]) {
+    constructor(tokens: Token[], options: IRendererOptions["markdownit"], rules?: Record<string, RuleCallbackType>) {
         this._tokens = tokens
         this._options = options
+        if (!!rules) { }
+        this._rules = {
+            ...Rules,
+            ...rules,
+        }
     }
 
     renderAttrs(token: Token | Record<string, any>) {
@@ -108,8 +114,8 @@ export class Transformer {
         let result: VNode[] = []
         for (let i = 0; i < tokens.length; i++) {
             const { type } = tokens[i]
-            if (Rules.hasOwnProperty(type)) {
-                const tmp = Rules[type](tokens, i, this._options, this)
+            if (this._rules.hasOwnProperty(type)) {
+                const tmp = this._rules[type](tokens, i, this._options, this)
                 if (Array.isArray(tmp)) {
                     result = result.concat(tmp)
                 } else {
@@ -140,8 +146,8 @@ export class Transformer {
                 } else {
                     result.push(tmp)
                 }
-            } else if (Rules.hasOwnProperty(type)) {
-                const tmp = Rules[type](this._tokens, i, this._options, this)
+            } else if (this._rules.hasOwnProperty(type)) {
+                const tmp = this._rules[type](this._tokens, i, this._options, this)
                 if (Array.isArray(tmp)) {
                     result = result.concat(tmp)
                 } else {
