@@ -128,7 +128,7 @@ export const Rules: Record<string, RuleCallbackType> = {
     text: (tokens: Token[], idx: number, options: IRendererOptions["markdownit"], slf: Transformer) => {
         const { content } = tokens[idx]
 
-        return escapeHtml(content)
+        return content
     },
 
     html_block: (tokens: Token[], idx: number, options: IRendererOptions["markdownit"], slf: Transformer) => {

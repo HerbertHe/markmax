@@ -16,7 +16,15 @@ specifiers:
   highlight.js: ^11.5.1
   less: ^4.1.2
   markdown-it: ^12.3.2
+  markdown-it-abbr: ^1.0.4
+  markdown-it-container: ^3.0.0
+  markdown-it-deflist: ^2.1.0
   markdown-it-emoji: ^2.0.2
+  markdown-it-footnote: ^3.0.3
+  markdown-it-ins: ^3.0.1
+  markdown-it-mark: ^3.0.1
+  markdown-it-sub: ^1.0.0
+  markdown-it-sup: ^1.0.0
   million: ^1.8.2
   postcss: ^8.4.12
   prettier: ^2.6.2
@@ -32,7 +40,15 @@ specifiers:
 dependencies:
   highlight.js: 11.5.1
   markdown-it: 12.3.2
+  markdown-it-abbr: 1.0.4
+  markdown-it-container: 3.0.0
+  markdown-it-deflist: 2.1.0
   markdown-it-emoji: 2.0.2
+  markdown-it-footnote: 3.0.3
+  markdown-it-ins: 3.0.1
+  markdown-it-mark: 3.0.1
+  markdown-it-sub: 1.0.0
+  markdown-it-sup: 1.0.0
   million: 1.9.6
   punycode: 2.1.1
   vditor-plugin: 0.4.1
@@ -2431,8 +2447,40 @@ packages:
     dev: true
     optional: true
 
+  /markdown-it-abbr/1.0.4:
+    resolution: {integrity: sha512-ZeA4Z4SaBbYysZap5iZcxKmlPL6bYA8grqhzJIHB1ikn7njnzaP8uwbtuXc4YXD5LicI4/2Xmc0VwmSiFV04gg==}
+    dev: false
+
+  /markdown-it-container/3.0.0:
+    resolution: {integrity: sha512-y6oKTq4BB9OQuY/KLfk/O3ysFhB3IMYoIWhGJEidXt1NQFocFK2sA2t0NYZAMyMShAGL6x5OPIbrmXPIqaN9rw==}
+    dev: false
+
+  /markdown-it-deflist/2.1.0:
+    resolution: {integrity: sha512-3OuqoRUlSxJiuQYu0cWTLHNhhq2xtoSFqsZK8plANg91+RJQU1ziQ6lA2LzmFAEes18uPBsHZpcX6We5l76Nzg==}
+    dev: false
+
   /markdown-it-emoji/2.0.2:
     resolution: {integrity: sha512-zLftSaNrKuYl0kR5zm4gxXjHaOI3FAOEaloKmRA5hijmJZvSjmxcokOLlzycb/HXlUFWzXqpIEoyEMCE4i9MvQ==}
+    dev: false
+
+  /markdown-it-footnote/3.0.3:
+    resolution: {integrity: sha512-YZMSuCGVZAjzKMn+xqIco9d1cLGxbELHZ9do/TSYVzraooV8ypsppKNmUJ0fVH5ljkCInQAtFpm8Rb3eXSrt5w==}
+    dev: false
+
+  /markdown-it-ins/3.0.1:
+    resolution: {integrity: sha512-32SSfZqSzqyAmmQ4SHvhxbFqSzPDqsZgMHDwxqPzp+v+t8RsmqsBZRG+RfRQskJko9PfKC2/oxyOs4Yg/CfiRw==}
+    dev: false
+
+  /markdown-it-mark/3.0.1:
+    resolution: {integrity: sha512-HyxjAu6BRsdt6Xcv6TKVQnkz/E70TdGXEFHRYBGLncRE9lBFwDNLVtFojKxjJWgJ+5XxUwLaHXy+2sGBbDn+4A==}
+    dev: false
+
+  /markdown-it-sub/1.0.0:
+    resolution: {integrity: sha512-z2Rm/LzEE1wzwTSDrI+FlPEveAAbgdAdPhdWarq/ZGJrGW/uCQbKAnhoCsE4hAbc3SEym26+W2z/VQB0cQiA9Q==}
+    dev: false
+
+  /markdown-it-sup/1.0.0:
+    resolution: {integrity: sha512-E32m0nV9iyhRR7CrhnzL5msqic7rL1juWre6TQNxsnApg7Uf+F97JOKxUijg5YwXz86lZ0mqfOnutoryyNdntQ==}
     dev: false
 
   /markdown-it/12.3.2:
