@@ -1,15 +1,17 @@
 import MarkdownIt from "markdown-it"
 import { IRendererOptions } from "../types/renderer"
+import { Rules } from "./rules"
 import { Transformer } from "./tranformer"
 
 // TODO 考虑直接移除 br, 此模式下完全不需要手动换行
 
 // 转化 Markdown-it 的树为 VNode
 export const transformMarkdownToVNode = (markdown: string, options: IRendererOptions["markdownit"]) => {
-    const md = new MarkdownIt(options)
-    const { plugins } = options
+    const { plugins, ...o } = options
+    const md = new MarkdownIt(o)
+
     /**
-     * 支持 markdown-it 插件
+     * BUG: 支持 markdown-it 插件
      */
     if (!!plugins && plugins.length > 0) {
         plugins.forEach(plugin => {
@@ -17,9 +19,19 @@ export const transformMarkdownToVNode = (markdown: string, options: IRendererOpt
         })
     }
 
+    // TODO 对插件修改 Rules 的情况进行处理，必须达到与 markmax 插件相同的控制，需要在此做些转化
+    const { renderer } = md
+    const { rules } = renderer
+    const unSupportedRules = Object.keys(rules).filter(key => !Rules.hasOwnProperty(key) || /_open/.test(key) || /_close/.test(key))
+    console.warn(unSupportedRules)
+
+    // TODO 听过 wrapper 支持 open/close 标签
+
+    console.log(md)
+
     const parser = md.parse(markdown, {})
     console.log("options", JSON.stringify(options))
     const vnode = new Transformer(parser, options).render()
-    // console.log(parser, vnode)
+    console.log(parser, vnode)
     return vnode
 }

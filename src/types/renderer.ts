@@ -1,7 +1,7 @@
 import { Options, PluginSimple, PluginWithOptions, PluginWithParams } from "markdown-it"
 import { VditorPluginsType } from "vditor-plugin/dist/types"
 
-type MarkdownItPlugin = PluginSimple | PluginWithOptions | PluginWithParams
+export type MarkdownItPlugin = PluginSimple | PluginWithOptions | PluginWithParams
 
 /**
  * MarkMax Renderer Options

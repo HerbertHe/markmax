@@ -21,6 +21,7 @@
   "dependencies": {
     "highlight.js": "^11.5.1",
     "markdown-it": "^12.3.2",
+    "markdown-it-emoji": "^2.0.2",
     "million": "^1.8.2",
     "punycode": "^2.1.1",
     "vditor-plugin": "^0.4.1"

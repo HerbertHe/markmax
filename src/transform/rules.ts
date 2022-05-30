@@ -5,7 +5,7 @@ import { ResultNode, RuleCallbackType } from "../types/rules"
 import { escapeHtml, unescapeAll } from "markdown-it/lib/common/utils"
 import { IRendererOptions } from "../types/renderer"
 import { fromHTMLStringToVNode } from "../utils/fromHTMLStringToVNode"
-import { fromStringAttrsToObj } from "../utils/fromStringAttrsToObj"
+import { generateHTMLTagCloseVNode, generateHTMLTagOpenVNode, isHTMLClose, isHTMLOpen } from "../utils/html"
 
 declare class Transformer {
     renderInlineAsText(children: Token[]): string
@@ -149,29 +149,14 @@ export const Rules: Record<string, RuleCallbackType> = {
         console.log(content)
         // 原生HTML 标签支持
         // TODO 修复原生属性问题
-        const HTMLTagOpenRegExp = /\<([a-z]+)\s*([^\<\>]+)?\>/
-        const HTMLTagCloseRegExp = /\<\/([a-z]+)\>/
-        if (html && HTMLTagOpenRegExp.test(content)) {
-            const [, tag, attrs] = content.match(HTMLTagOpenRegExp)
-            let obj = fromStringAttrsToObj(attrs)
-            return m(
-                tag,
-                {
-                    nesting: 1,
-                    ...obj
-                }
-            )
+        if (html && isHTMLOpen(content)) {
+            return generateHTMLTagOpenVNode(content)
         }
 
-        if (html && HTMLTagCloseRegExp.test(content)) {
-            const [, tag] = content.match(HTMLTagCloseRegExp)
-            return m(
-                tag,
-                {
-                    nesting: -1,
-                }
-            )
+        if (html && isHTMLClose) {
+            return generateHTMLTagCloseVNode(content)
         }
+
         return tokens[idx].content
     }
 }

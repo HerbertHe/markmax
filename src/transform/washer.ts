@@ -20,6 +20,11 @@ export class Washer {
             return
         }
 
+        // TODO 清除 tag 为空的标签
+        if (node.tag === "") {
+            return
+        }
+
         if (node.props?.nesting === 1) {
             delete node.props.nesting;
             this._elStack.push(node)

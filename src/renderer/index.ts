@@ -15,6 +15,11 @@ import { transformMarkdownToVNode } from "../transform/index"
 import { IRendererOptions } from "../types/renderer"
 
 /**
+ * TODO: 移除emoji尝试
+ */
+import emoji from "markdown-it-emoji"
+
+/**
  * 渲染器
  */
 export class Renderer {
@@ -29,6 +34,7 @@ export class Renderer {
 
     constructor({ theme, plugins, markdownit }: IRendererOptions) {
         this._plugins = plugins
+        markdownit.plugins = [emoji]
         this._markdownItOptions = markdownit
         this._setup()
         if (!!theme) {

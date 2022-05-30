@@ -134,16 +134,13 @@ export class Transformer {
         for (let i = 0; i < this._tokens.length; i++) {
             const { type, children } = this._tokens[i]
             if (type === "inline") {
-                // TODO 行内规则
                 const tmp = this._renderInline(children)
-                // TODO 区分单节点和多节点的情况
                 if (Array.isArray(tmp)) {
                     result = result.concat(tmp)
                 } else {
                     result.push(tmp)
                 }
             } else if (Rules.hasOwnProperty(type)) {
-                // TODO 特殊规则
                 const tmp = Rules[type](this._tokens, i, this._options, this)
                 if (Array.isArray(tmp)) {
                     result = result.concat(tmp)
@@ -151,7 +148,6 @@ export class Transformer {
                     result.push(tmp)
                 }
             } else {
-                // TODO 普通标签规则
                 const tmp = this.renderToken(this._tokens, i)
                 if (Array.isArray(tmp)) {
                     result = result.concat(tmp)
