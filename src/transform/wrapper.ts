@@ -11,7 +11,7 @@ export const MarkdownItPluginWrapper = (fn: MarkdownItRenderer.MarkdownItRenderR
     // 转化插件
     return <RuleCallbackType>function (tokens, idx, options, slf) {
         // TODO Don't support argument `env`
-        const res = fn(tokens, idx, options, null, slf)
+        const res = fn(tokens, idx, options, {}, slf)
         /**
          * tranform open tag
          *

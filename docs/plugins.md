@@ -27,6 +27,7 @@ Here are all reserved keys for the rules as followed:
 - [markdown-it-emoji](https://github.com/markdown-it/markdown-it-emoji)
 - [markdown-it-sub](https://github.com/markdown-it/markdown-it-sub)
 - [markdown-it-sup](https://github.com/markdown-it/markdown-it-sup)
+- [markdown-it-ins](https://github.com/markdown-it/markdown-it-ins)
 - [markdown-it-mark](https://github.com/markdown-it/markdown-it-mark)
 - [markdown-it-deflist](https://github.com/markdown-it/markdown-it-deflist)
 - [markdown-it-abbr](https://github.com/markdown-it/markdown-it-abbr)

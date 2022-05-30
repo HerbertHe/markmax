@@ -2,7 +2,7 @@ import { m, VElement } from "million"
 import Token from "markdown-it/lib/token"
 
 import { ResultNode, RuleCallbackType } from "../types/rules"
-import { escapeHtml, unescapeAll } from "markdown-it/lib/common/utils"
+import { unescapeAll } from "markdown-it/lib/common/utils"
 import { IRendererOptions } from "../types/renderer"
 import { fromHTMLStringToVNode } from "../utils/fromHTMLStringToVNode"
 import { generateHTMLTagCloseVNode, generateHTMLTagOpenVNode, isHTMLClose, isHTMLOpen } from "../utils/html"
