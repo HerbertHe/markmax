@@ -2,8 +2,8 @@ import { m, VElement } from "million"
 import { fromHTMLStringToVNode } from "./fromHTMLStringToVNode"
 import { fromStringAttrsToObj } from "./fromStringAttrsToObj"
 
-export const HTMLTagOpenRegExp = /\<([a-z]+)\s*([^\<\>]+)?\>/
-export const HTMLTagCloseRegExp = /\<\/([a-z]+)\>/
+export const HTMLTagOpenRegExp = /^\<([a-z]+)\s*([^\<\>]+)?\>$/
+export const HTMLTagCloseRegExp = /^\<\/([a-z]+)\>$/
 
 export const HTMLTagRegExp = /^\<[a-z]+\s*([^\<\>]+)?\>(.*)\<\/[a-z]+\>$/
 
@@ -15,6 +15,14 @@ export const isHTMLClose = (content: string) => {
     return HTMLTagCloseRegExp.test(content)
 }
 
+/**
+ * TODO: fix bug:
+ *
+ * million doesn't support fragment
+ * <a></a><a></a>
+ * @param content
+ * @returns
+ */
 export const isHTML = (content: string) => {
     return HTMLTagRegExp.test(content)
 }

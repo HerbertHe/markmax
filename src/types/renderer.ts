@@ -11,7 +11,7 @@ export type MarkdownItPlugin = PluginSimple | PluginWithOptions | PluginWithPara
  */
 export interface IRendererOptions {
     theme?: string
-    markdownit?: Pick<Options, "highlight" | "linkify" | "html"> & {
+    markdownit?: Pick<Options, "linkify" | "html" | "breaks" | "typographer"> & {
         plugins?: MarkdownItPlugin[]
     }
     plugins?: VditorPluginsType

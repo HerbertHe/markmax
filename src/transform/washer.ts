@@ -65,7 +65,7 @@ export class Washer {
         }
 
         // BUG 处理 nesting = 0 的节点, 错误的节点排列顺序需要修改，错误的树
-        if (node.props?.nesting === 0) {
+        if ([0, "0"].includes(node.props?.nesting)) {
             delete node.props.nesting
             // 向父节点添加子项
             const preNode = this._elStack[this._elStack.length - 1]

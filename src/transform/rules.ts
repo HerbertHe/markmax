@@ -7,6 +7,8 @@ import { IRendererOptions } from "../types/renderer"
 import { fromHTMLStringToVNode } from "../utils/fromHTMLStringToVNode"
 import { generateHTMLTagCloseVNode, generateHTMLTagOpenVNode, isHTMLClose, isHTMLOpen } from "../utils/html"
 
+import { HighlightPlugin } from "../plugins/highlight"
+
 declare class Transformer {
     renderInlineAsText(children: Token[]): string
     renderToken(tokens: Token[], idx: number): ResultNode
@@ -60,7 +62,7 @@ export const Rules: Record<string, RuleCallbackType> = {
         //     type: "code",
         //     content: HighlightPlugin(token.content)
         // })
-        let highlighted = token.content
+        let code = fromHTMLStringToVNode(`<code nesting="${token.nesting}">${HighlightPlugin(token.content)}</code>`)
 
         // TODO 处理高亮之后的代码是否以 pre 开头, 否则添加 \n, 加空行
 
@@ -75,18 +77,15 @@ export const Rules: Record<string, RuleCallbackType> = {
                 tmpAttrs[i][1] += " language-" + langName
             }
 
+            (<VElement>code).props = { ...(<VElement>code).props, ...slf.renderAttrs({ attrs: tmpAttrs }) }
+
             return [
                 m(
                     "pre",
                     {
                         nesting: token.nesting,
                     },
-                    [m("code", {
-                        ...slf.renderAttrs({ attrs: tmpAttrs }),
-                        nesting: token.nesting,
-                    },
-                        [highlighted]
-                    )]
+                    [code]
                 )
             ]
         }
@@ -99,12 +98,7 @@ export const Rules: Record<string, RuleCallbackType> = {
                     ...slf.renderAttrs(token),
                     nesting: token.nesting,
                 },
-                [m("code", {
-                    nesting: token.nesting,
-                },
-                    [highlighted]
-                )
-                ]
+                [code]
             )
         ]
     },
@@ -122,12 +116,17 @@ export const Rules: Record<string, RuleCallbackType> = {
     },
     // TODO softbreak
     softbreak: (tokens: Token[], idx: number, options: IRendererOptions["markdownit"], slf: Transformer) => {
-        return [m("br", {})]
+        const { breaks } = options
+        return breaks ? [m("br", {})] : `\n`
     },
 
     text: (tokens: Token[], idx: number, options: IRendererOptions["markdownit"], slf: Transformer) => {
         const { content } = tokens[idx]
 
+        /**
+         * TODO: 可能会导致的问题
+         * @link https://github.com/markdown-it/markdown-it/blob/master/lib/renderer.js#L117
+         */
         return content
     },
 
