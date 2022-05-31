@@ -19,7 +19,10 @@ const devPlugins =
         : []
 
 export default defineConfig({
-    input: { index: "src/index.ts", plugin: "src/plugins/index.ts" },
+    input: {
+        index: "src/index.ts",
+        helper: "src/helper/index.ts",
+    },
     output: [
         {
             dir: "dist",

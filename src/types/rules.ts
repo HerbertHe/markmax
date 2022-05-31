@@ -7,7 +7,7 @@ import { IRendererOptions } from "./renderer"
  * Reference from @types/markdown-it/
  */
 export declare namespace MarkdownItRenderer {
-    type MarkdownItRenderRule = (tokens: Token[], idx: number, options: MarkdownIt.Options, env: any, self: Renderer) => string;
+    type MarkdownItRenderRule = (tokens: Token[], idx: number, options: MarkdownIt.Options, env: any, self: MarkdownItRenderer) => string;
 
     interface MarkdownItRenderRuleRecord {
         [type: string]: MarkdownItRenderRule
@@ -35,3 +35,5 @@ export declare class MarkdownItRenderer {
 export type ResultNode = VNode[] | string
 
 export type RuleCallbackType = (tokens: Token[], idx: number, options: IRendererOptions["markdownit"], slf: Transformer) => ResultNode
+
+export type ReservedRulesKeysType = ""
