@@ -30,7 +30,7 @@
     "markdown-it-mark": "^3.0.1",
     "markdown-it-sub": "^1.0.0",
     "markdown-it-sup": "^1.0.0",
-    "million": "^1.8.2",
+    "million": "^1.10.0",
     "punycode": "^2.1.1",
     "vditor-plugin": "^0.4.1"
   },

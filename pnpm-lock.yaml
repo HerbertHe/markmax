@@ -25,7 +25,7 @@ specifiers:
   markdown-it-mark: ^3.0.1
   markdown-it-sub: ^1.0.0
   markdown-it-sup: ^1.0.0
-  million: ^1.8.2
+  million: ^1.10.0
   postcss: ^8.4.12
   prettier: ^2.6.2
   punycode: ^2.1.1
@@ -49,7 +49,7 @@ dependencies:
   markdown-it-mark: 3.0.1
   markdown-it-sub: 1.0.0
   markdown-it-sup: 1.0.0
-  million: 1.9.6
+  million: 1.10.0
   punycode: 2.1.1
   vditor-plugin: 0.4.1
 
@@ -2502,8 +2502,8 @@ packages:
     resolution: {integrity: sha512-/sKlQJCBYVY9Ers9hqzKou4H6V5UWc/M59TH2dvkt+84itfnq7uFOMLpOiOS4ujvHP4etln18fmIxA5R5fll0g==}
     dev: false
 
-  /million/1.9.6:
-    resolution: {integrity: sha512-jnuWPcubR0eig4VfeSG98WXYFm9iROBKcTK9A+CMyeQTWjLPNabKTg+x9+AfGDBxaZOgAokBNn5vkQ80Ur1pbA==}
+  /million/1.10.0:
+    resolution: {integrity: sha512-gIolKz8Hz/vmwonPGDmdeLkLiqD3nPTPr8dEOeTpfho38Crcq0U+LOUOEHrDKtkNz2bvEXq1hh/T5aClLOIzXQ==}
     dev: false
 
   /mime/1.6.0:

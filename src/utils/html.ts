@@ -1,4 +1,4 @@
-import { m, VElement } from "million"
+import { m, VElement, VNode } from "million"
 import { fromHTMLStringToVNode } from "./fromHTMLStringToVNode"
 import { fromStringAttrsToObj } from "./fromStringAttrsToObj"
 
@@ -16,10 +16,7 @@ export const isHTMLClose = (content: string) => {
 }
 
 /**
- * TODO: fix bug:
- *
- * million doesn't support fragment
- * <a></a><a></a>
+ * HTML
  * @param content
  * @returns
  */
@@ -49,13 +46,25 @@ export const generateHTMLTagCloseVNode = (content: string) => {
     )
 }
 
-export const generateHTMLTagVNode = (content: string) => {
-    const res = fromHTMLStringToVNode(content) as VElement
-    const { props } = res
-    res.props = {
-        ...props,
-        nesting: 0
-    }
+/**
+ * Generate HTML Tag VNode
+ *
+ * support: fragments
+ * @param content
+ * @returns
+ */
+export const generateHTMLTagVNode = (content: string): VNode[] => {
+    const res = fromHTMLStringToVNode(content)
+
+    res.forEach(vnode => {
+        if (!!vnode && typeof vnode !== "string") {
+            const { props } = vnode
+            vnode.props = {
+                ...props,
+                nesting: 0,
+            }
+        }
+    })
 
     return res
 }

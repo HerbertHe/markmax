@@ -34,7 +34,7 @@ export const MarkdownItPluginWrapper = (fn: MarkdownItRenderer.MarkdownItRenderR
          * tranform complete tag
          */
         if (isHTML(res)) {
-            return [generateHTMLTagVNode(res)]
+            return generateHTMLTagVNode(res)
         }
 
         /**

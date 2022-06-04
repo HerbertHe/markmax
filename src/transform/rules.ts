@@ -58,13 +58,7 @@ export const Rules: Record<string, RuleCallbackType> = {
         /**
          * @link https://github.com/markdown-it/markdown-it/blob/master/lib/renderer.js#L52
          */
-        // let highlighted = fromStringToVNode({
-        //     type: "code",
-        //     content: HighlightPlugin(token.content)
-        // })
-        let code = fromHTMLStringToVNode(`<code nesting="${token.nesting}">${HighlightPlugin(token.content)}</code>`)
-
-        // TODO 处理高亮之后的代码是否以 pre 开头, 否则添加 \n, 加空行
+        let highlighted = fromHTMLStringToVNode(HighlightPlugin(token.content))
 
         if (info) {
             let i = token.attrIndex("class")
@@ -77,15 +71,24 @@ export const Rules: Record<string, RuleCallbackType> = {
                 tmpAttrs[i][1] += " language-" + langName
             }
 
-            (<VElement>code).props = { ...(<VElement>code).props, ...slf.renderAttrs({ attrs: tmpAttrs }) }
-
             return [
                 m(
                     "pre",
                     {
                         nesting: token.nesting,
                     },
-                    [code]
+                    [
+                        m(
+                            "code",
+                            {
+                                nesting: token.nesting,
+                                ...slf.renderAttrs({
+                                    attrs: tmpAttrs,
+                                }),
+                            },
+                            highlighted
+                        )
+                    ]
                 )
             ]
         }
@@ -98,7 +101,13 @@ export const Rules: Record<string, RuleCallbackType> = {
                     ...slf.renderAttrs(token),
                     nesting: token.nesting,
                 },
-                [code]
+                [m(
+                    "code",
+                    {
+                        nesting: token.nesting,
+                    },
+                    highlighted
+                )]
             )
         ]
     },
@@ -109,12 +118,10 @@ export const Rules: Record<string, RuleCallbackType> = {
         return slf.renderToken(tokens, idx)
     },
 
-    // TODO 考虑移除换行节点
-    // TODO 可能的 options
     hardbreak: (tokens: Token[], idx: number, options: IRendererOptions["markdownit"], slf: Transformer) => {
         return [m("br", {})]
     },
-    // TODO softbreak
+
     softbreak: (tokens: Token[], idx: number, options: IRendererOptions["markdownit"], slf: Transformer) => {
         const { breaks } = options
         return breaks ? [m("br", {})] : `\n`
@@ -133,7 +140,7 @@ export const Rules: Record<string, RuleCallbackType> = {
     html_block: (tokens: Token[], idx: number, options: IRendererOptions["markdownit"], slf: Transformer) => {
         const { html } = options
         if (html) {
-            const node = fromHTMLStringToVNode(tokens[idx].content.replace(/\n/g, "")) as VElement
+            const node = fromHTMLStringToVNode(tokens[idx].content.replace(/\n/g, ""))[0] as VElement
             node.props = {
                 nesting: 0
             }
