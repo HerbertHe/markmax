@@ -1,7 +1,9 @@
 import { version } from "../../package.json"
 
-import { m, render, VNode } from "million"
+import { m, render } from "million"
+import { fromVNodeToString } from "million/utils"
 import { Options } from "markdown-it"
+
 import { transformMarkdownToVNode } from "../transform/index"
 import { IRendererOptions } from "../types/renderer"
 
@@ -77,8 +79,35 @@ export class Renderer {
         // loadVditorPluginsStyle(this._styles)
     }
 
+    private _createMarkMaxVNode = (content: string) => {
+        return m(
+            "div",
+            {
+                class: "markmax"
+            },
+            transformMarkdownToVNode(content, this._markdownItOptions),
+            1
+        )
+    }
+
     /**
-     * render function
+     * Export Vnode Method
+     * @param content Markdown content
+     */
+    exportVNode = (content: string) => {
+        return this._createMarkMaxVNode(content)
+    }
+
+    /**
+     * Export HTML Method
+     * @param content Markdown content
+     */
+    exportHTML = (content: string) => {
+        return fromVNodeToString(this._createMarkMaxVNode(content))
+    }
+
+    /**
+     * Render Method
      * @param content markdown content
      * @param id element id
      */
@@ -88,16 +117,8 @@ export class Renderer {
             throw new Error("Element Not Found!")
         }
         // TODO 考虑先加载样式表
-        const vnode: VNode = m(
-            "div",
-            {
-                class: "markmax"
-            },
-            transformMarkdownToVNode(content, this._markdownItOptions),
-            1
-        )
 
-        render(el, vnode)
+        render(el, this._createMarkMaxVNode(content))
     }
 
     /**
@@ -105,8 +126,8 @@ export class Renderer {
      * @param plugin
      * @returns
      */
-    use = (plugin) => {
-        this._updatePlugins(plugin)
-        return this
-    }
+    // use = (plugin) => {
+    //     this._updatePlugins(plugin)
+    //     return this
+    // }
 }
